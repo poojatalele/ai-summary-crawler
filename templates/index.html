@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Summary Crawler</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>📄 AI Summary Crawler</h1>
+
+  <form method="post">
+    <input type="text" name="url" placeholder="Enter starting URL" required>
+    <input type="number" name="max_pages" value="10" min="1" max="50">
+    <button type="submit">Start Crawl</button>
+  </form>
+
+  <hr>
+
+  <div id="content">
+    {% for url, item in summaries.items() %}
+      <div class="card">
+        <div class="title">{{ item.title }}</div>
+        <a href="{{ url }}" class="link" target="_blank">{{ url }}</a>
+        <div class="summary">{{ item.summary }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
