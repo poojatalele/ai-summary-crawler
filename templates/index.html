@@ -25,5 +25,10 @@
       </div>
     {% endfor %}
   </div>
+{% if error %}
+  <div style="color: red; font-weight: bold; padding: 10px; margin-top: 10px;">
+    ⚠️ {{ error }}
+  </div>
+{% endif %}
 </body>
 </html>

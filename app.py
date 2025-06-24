@@ -56,10 +56,11 @@ def crawl_and_summarize(start_url, max_pages=10):
     visited = set()
     queue = deque([start_url])
     results = {}
+    error_message = None
 
     while queue and len(visited) < max_pages:
         url = queue.popleft()
-        url = urldefrag(url)[0].rstrip('/')  # clean URL
+        url = urldefrag(url)[0].rstrip('/')
 
         if url in visited:
             continue
@@ -68,6 +69,7 @@ def crawl_and_summarize(start_url, max_pages=10):
             print(f" Crawling: {url}")
             response = requests.get(url, timeout=8)
             if response.status_code != 200:
+                print(f" Skipping {url} as it is not accessible due to status code {response.status_code}")
                 continue
 
             html = response.text
@@ -91,22 +93,28 @@ def crawl_and_summarize(start_url, max_pages=10):
             visited.add(url)
 
         except Exception as e:
-            print(f" Error crawling {url}: {e}")
+            error_message = f" Error crawling {url}: {e}"
+            print(error_message)
 
-    return results
+    if not results:
+        error_message = error_message or "No pages could be crawled. The site may block bots or be JavaScript-only."
+
+    return results, error_message
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     summaries = {}
+    error = None
+
     if request.method == 'POST':
         start_url = request.form.get('url')
         max_pages = int(request.form.get('max_pages', 10))
-        summaries = crawl_and_summarize(start_url, max_pages)
+        summaries, error = crawl_and_summarize(start_url, max_pages)
 
         with open('page_summaries.json', 'w', encoding='utf-8') as f:
             json.dump(summaries, f, indent=2, ensure_ascii=False)
 
-    return render_template('index.html', summaries=summaries)
+    return render_template('index.html', summaries=summaries, error=error)
 
 if __name__ == '__main__':
     app.run(debug=True)
